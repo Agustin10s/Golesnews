@@ -1,27 +1,76 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { articleDb } from '@/lib/cms-db';
 
-const CMS_URL = process.env.CMS_API_URL || 'http://localhost:5001';
+export const dynamic = 'force-dynamic';
+
+const CATEGORY_LABELS: Record<string, string> = {
+  futbol:        'Fútbol',
+  argentina:     'Argentina',
+  internacional: 'Internacional',
+  champions:     'Champions League',
+  libertadores:  'Copa Libertadores',
+  mls:           'MLS',
+  editorial:     'Editorial',
+  transfers:     'Transferencias',
+  lesiones:      'Lesiones',
+};
+
+function readTime(html: string): number {
+  const words = html.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 200));
+}
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
-    const page = searchParams.get('page') || '1';
-    const per_page = searchParams.get('per_page') || '12';
-    const category = searchParams.get('category') || '';
-    const breaking = searchParams.get('breaking') || '';
+    const page     = Math.max(1, parseInt(searchParams.get('page')     || '1'));
+    const per_page = Math.min(50, parseInt(searchParams.get('per_page') || '12'));
+    const category = searchParams.get('category') || undefined;
+    const slug     = searchParams.get('slug')     || undefined;
 
-    const params = new URLSearchParams({ page, per_page });
-    if (category) params.set('category', category);
-    if (breaking) params.set('breaking', breaking);
+    // Single article by slug
+    if (slug) {
+      const article = articleDb.findBySlug(slug);
+      if (!article || article.status !== 'published') {
+        return NextResponse.json({ error: 'No encontrado' }, { status: 404 });
+      }
+      articleDb.incrementViews(article.id);
+      return NextResponse.json({
+        article: {
+          ...article,
+          tags:           JSON.parse(article.tags || '[]'),
+          category_label: CATEGORY_LABELS[article.category] || article.category,
+          read_time:      readTime(article.content),
+        },
+      });
+    }
 
-    const res = await fetch(`${CMS_URL}/api/public/articles?${params}`, {
-      next: { revalidate: 120 }, // 2 min cache
+    const offset = (page - 1) * per_page;
+    const rows   = articleDb.list({ status: 'published', category, limit: per_page, offset });
+    const total  = articleDb.count({ status: 'published', category });
+
+    const articles = rows.map(a => ({
+      id:             String(a.id),
+      title:          a.title,
+      slug:           a.slug,
+      excerpt:        a.excerpt,
+      featured_image: a.featured_image || null,
+      category:       a.category,
+      category_label: CATEGORY_LABELS[a.category] || a.category,
+      published_at:   a.published_at || a.created_at,
+      author_name:    (a as typeof a & { author_name?: string }).author_name || 'GolesNews',
+      read_time:      readTime(a.content),
+      source_name:    a.source_name || null,
+    }));
+
+    return NextResponse.json({
+      articles,
+      total,
+      page,
+      pages: Math.ceil(total / per_page),
     });
-
-    if (!res.ok) return NextResponse.json({ articles: [], total: 0, page: 1, pages: 0 });
-    const data = await res.json();
-    return NextResponse.json(data);
-  } catch {
+  } catch (e) {
+    console.error('News API error:', e);
     return NextResponse.json({ articles: [], total: 0, page: 1, pages: 0 });
   }
 }

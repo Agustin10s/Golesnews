@@ -12,15 +12,6 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: '**' }, // allow all for logos from CMS
     ],
   },
-  async rewrites() {
-    return [
-      // Proxy CMS API calls (for when running standalone frontend)
-      {
-        source: '/cms/:path*',
-        destination: '/cms/:path*',
-      },
-    ];
-  },
 };
 
 export default nextConfig;

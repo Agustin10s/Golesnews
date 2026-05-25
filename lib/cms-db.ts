@@ -18,9 +18,10 @@ if (!fs.existsSync(dbDir)) fs.mkdirSync(dbDir, { recursive: true });
 declare global { var __cmsDb: Database.Database | undefined }
 
 function openDb(): Database.Database {
-  const db = new Database(DB_PATH);
+  const db = new Database(DB_PATH, { timeout: 8000 }); // wait up to 8s if locked
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
+  db.pragma('busy_timeout = 8000');
   return db;
 }
 
