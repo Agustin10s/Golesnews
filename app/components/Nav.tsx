@@ -8,8 +8,10 @@ const LINKS = [
   { href: '/en-vivo', label: '● EN VIVO', live: true },
   { href: '/fixture', label: 'Fixture' },
   { href: '/tablas', label: 'Tablas' },
-  { href: '/liga-argentina', label: 'Liga Argentina' },
+  { href: '/liga-argentina', label: 'Argentina' },
+  { href: '/sudamerica', label: 'Sudamérica' },
   { href: '/europa', label: 'Europa' },
+  { href: '/americas', label: 'Américas' },
   { href: '/mundial-2026', label: 'Mundial 2026' },
 ];
 

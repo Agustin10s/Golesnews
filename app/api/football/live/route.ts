@@ -1,19 +1,10 @@
 import { NextResponse } from 'next/server';
-import { LEAGUES } from '@/lib/football-api';
+import { ALL_LEAGUE_IDS } from '@/lib/football-api';
 
 const API_BASE = 'https://v3.football.api-sports.io';
 const API_KEY = process.env.FOOTBALL_API_KEY || '';
 
-const FOLLOWED_LEAGUES = [
-  LEAGUES.LIGA_PROFESIONAL,
-  LEAGUES.COPA_ARGENTINA,
-  LEAGUES.PREMIER_LEAGUE,
-  LEAGUES.LALIGA,
-  LEAGUES.CHAMPIONS_LEAGUE,
-  LEAGUES.LIBERTADORES,
-  LEAGUES.SUDAMERICANA,
-  LEAGUES.WORLD_CUP,
-];
+const FOLLOWED_LEAGUES = ALL_LEAGUE_IDS;
 
 export const runtime = 'nodejs';
 export const revalidate = 0; // always fresh for live

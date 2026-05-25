@@ -5,15 +5,24 @@ import StandingsTable from '../components/StandingsTable';
 import { LEAGUES } from '@/lib/football-api';
 
 const LEAGUES_CONFIG = [
-  { id: LEAGUES.LIGA_PROFESIONAL, label: 'Liga Profesional Argentina', flag: '🇦🇷' },
-  { id: LEAGUES.COPA_ARGENTINA, label: 'Copa Argentina', flag: '🇦🇷' },
-  { id: LEAGUES.PREMIER_LEAGUE, label: 'Premier League', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿' },
-  { id: LEAGUES.LALIGA, label: 'La Liga', flag: '🇪🇸' },
-  { id: LEAGUES.CHAMPIONS_LEAGUE, label: 'Champions League', flag: '🏆' },
-  { id: LEAGUES.LIBERTADORES, label: 'Copa Libertadores', flag: '🌎' },
-  { id: LEAGUES.SUDAMERICANA, label: 'Copa Sudamericana', flag: '🌎' },
-  { id: LEAGUES.SERIE_A, label: 'Serie A', flag: '🇮🇹' },
-  { id: LEAGUES.BUNDESLIGA, label: 'Bundesliga', flag: '🇩🇪' },
+  // Argentina
+  { id: LEAGUES.LIGA_PROFESIONAL,  label: 'Liga Profesional Argentina', flag: '🇦🇷', group: 'Argentina' },
+  { id: LEAGUES.PRIMERA_NACIONAL,  label: 'Liga B Nacional',             flag: '🇦🇷', group: 'Argentina' },
+  { id: LEAGUES.COPA_ARGENTINA,    label: 'Copa Argentina',              flag: '🇦🇷', group: 'Argentina' },
+  // Sudamérica
+  { id: LEAGUES.LIBERTADORES,      label: 'Copa Libertadores',           flag: '🌎', group: 'Sudamérica' },
+  { id: LEAGUES.SUDAMERICANA,      label: 'Copa Sudamericana',           flag: '🌎', group: 'Sudamérica' },
+  // Europa
+  { id: LEAGUES.CHAMPIONS_LEAGUE,  label: 'UEFA Champions League',       flag: '🏆', group: 'Europa' },
+  { id: LEAGUES.EUROPA_LEAGUE,     label: 'UEFA Europa League',          flag: '🇪🇺', group: 'Europa' },
+  { id: LEAGUES.PREMIER_LEAGUE,    label: 'Premier League',              flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', group: 'Europa' },
+  { id: LEAGUES.LALIGA,            label: 'La Liga',                     flag: '🇪🇸', group: 'Europa' },
+  { id: LEAGUES.SERIE_A,           label: 'Serie A',                     flag: '🇮🇹', group: 'Europa' },
+  // Américas
+  { id: LEAGUES.LIGA_MX,           label: 'Liga MX',                     flag: '🇲🇽', group: 'Américas' },
+  { id: LEAGUES.MLS,               label: 'MLS',                         flag: '🇺🇸', group: 'Américas' },
+  // Mundial
+  { id: LEAGUES.WORLD_CUP,         label: 'Copa Mundial 2026',           flag: '🏆', group: 'Mundial' },
 ];
 
 interface StandingRow {

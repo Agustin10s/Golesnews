@@ -1,21 +1,50 @@
 const API_BASE = 'https://v3.football.api-sports.io';
 const API_KEY = process.env.FOOTBALL_API_KEY || '';
 
-// League IDs
+// ── LIGAS HABILITADAS (SOLO ESTAS) ───────────────────────────
 export const LEAGUES = {
-  LIGA_PROFESIONAL: 128,
-  COPA_ARGENTINA: 130,
-  PREMIER_LEAGUE: 39,
-  LALIGA: 140,
-  CHAMPIONS_LEAGUE: 2,
-  LIBERTADORES: 13,
-  SUDAMERICANA: 11,
-  WORLD_CUP: 1,
-  SERIE_A: 135,
-  BUNDESLIGA: 78,
+  // Argentina
+  LIGA_PROFESIONAL: 128,   // Primera División Argentina
+  PRIMERA_NACIONAL: 131,   // Liga B Nacional Argentina
+  COPA_ARGENTINA: 130,     // Copa Argentina
+  // Sudamérica
+  LIBERTADORES: 13,        // Copa Libertadores
+  SUDAMERICANA: 11,        // Copa Sudamericana
+  // Europa
+  PREMIER_LEAGUE: 39,      // Premier League (Inglaterra)
+  LALIGA: 140,             // La Liga (España)
+  SERIE_A: 135,            // Serie A (Italia)
+  CHAMPIONS_LEAGUE: 2,     // UEFA Champions League
+  EUROPA_LEAGUE: 3,        // UEFA Europa League
+  // Américas
+  LIGA_MX: 262,            // Liga MX (México)
+  MLS: 253,                // MLS (USA)
+  // Mundial
+  WORLD_CUP: 1,            // Copa Mundial FIFA 2026
 } as const;
 
-export const CURRENT_SEASON = 2025;
+// Temporadas por liga (Mayo 2026)
+// Ligas europeas: temporada 2025 = agosto 2025 – mayo 2026
+// Sudamérica/Américas: año calendario 2026
+export const LEAGUE_SEASONS: Record<number, number> = {
+  [128]: 2025,   // LPF Argentina — Clausura 2025 / Apertura 2025
+  [131]: 2025,   // Primera Nacional
+  [130]: 2025,   // Copa Argentina
+  [13]:  2026,   // Libertadores 2026
+  [11]:  2026,   // Sudamericana 2026
+  [39]:  2025,   // Premier League 2025/26
+  [140]: 2025,   // La Liga 2025/26
+  [135]: 2025,   // Serie A 2025/26
+  [2]:   2025,   // Champions League 2025/26
+  [3]:   2025,   // Europa League 2025/26
+  [262]: 2025,   // Liga MX Clausura 2025
+  [253]: 2026,   // MLS 2026
+  [1]:   2026,   // Mundial 2026
+};
+
+// Lista completa de todas las ligas habilitadas
+export const ALL_LEAGUE_IDS = Object.values(LEAGUES) as number[];
+
 export const WC_SEASON = 2026;
 
 export interface Team {

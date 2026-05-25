@@ -6,9 +6,13 @@ import { LEAGUES } from '@/lib/football-api';
 
 const TABS = [
   { id: LEAGUES.LIGA_PROFESIONAL, label: 'LPF' },
-  { id: LEAGUES.PREMIER_LEAGUE, label: 'PL' },
+  { id: LEAGUES.PRIMERA_NACIONAL, label: 'Liga B' },
+  { id: LEAGUES.PREMIER_LEAGUE, label: 'Premier' },
   { id: LEAGUES.LALIGA, label: 'LaLiga' },
   { id: LEAGUES.CHAMPIONS_LEAGUE, label: 'UCL' },
+  { id: LEAGUES.LIBERTADORES, label: 'Libertad.' },
+  { id: LEAGUES.LIGA_MX, label: 'Liga MX' },
+  { id: LEAGUES.MLS, label: 'MLS' },
 ];
 
 interface StandingsData {

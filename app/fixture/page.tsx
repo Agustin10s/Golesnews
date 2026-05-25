@@ -12,14 +12,20 @@ interface Fixture {
 }
 
 const LEAGUE_TABS = [
-  { id: 0, label: 'Todos' },
-  { id: LEAGUES.LIGA_PROFESIONAL, label: 'Liga ARG' },
-  { id: LEAGUES.COPA_ARGENTINA, label: 'Copa ARG' },
-  { id: LEAGUES.PREMIER_LEAGUE, label: 'Premier' },
-  { id: LEAGUES.LALIGA, label: 'La Liga' },
-  { id: LEAGUES.CHAMPIONS_LEAGUE, label: 'Champions' },
-  { id: LEAGUES.LIBERTADORES, label: 'Libertadores' },
-  { id: LEAGUES.WORLD_CUP, label: 'Mundial' },
+  { id: 0,                           label: 'Todos' },
+  { id: LEAGUES.LIGA_PROFESIONAL,    label: 'LPF' },
+  { id: LEAGUES.PRIMERA_NACIONAL,    label: 'Liga B' },
+  { id: LEAGUES.COPA_ARGENTINA,      label: 'Copa ARG' },
+  { id: LEAGUES.LIBERTADORES,        label: 'Libertadores' },
+  { id: LEAGUES.SUDAMERICANA,        label: 'Sudamericana' },
+  { id: LEAGUES.CHAMPIONS_LEAGUE,    label: 'Champions' },
+  { id: LEAGUES.EUROPA_LEAGUE,       label: 'Europa Lg.' },
+  { id: LEAGUES.PREMIER_LEAGUE,      label: 'Premier' },
+  { id: LEAGUES.LALIGA,              label: 'La Liga' },
+  { id: LEAGUES.SERIE_A,             label: 'Serie A' },
+  { id: LEAGUES.LIGA_MX,             label: 'Liga MX' },
+  { id: LEAGUES.MLS,                 label: 'MLS' },
+  { id: LEAGUES.WORLD_CUP,           label: 'Mundial 2026' },
 ];
 
 export default function FixturePage() {

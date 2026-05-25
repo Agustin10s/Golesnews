@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { LEAGUES, CURRENT_SEASON } from '@/lib/football-api';
+import { LEAGUES, LEAGUE_SEASONS } from '@/lib/football-api';
 
 const API_BASE = 'https://v3.football.api-sports.io';
 const API_KEY = process.env.FOOTBALL_API_KEY || '';
@@ -12,11 +12,12 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = req.nextUrl;
     const leagueId = parseInt(searchParams.get('league') || String(LEAGUES.LIGA_PROFESIONAL));
-    const season = parseInt(searchParams.get('season') || String(CURRENT_SEASON));
+    // Usa la season correcta de la liga, o la que venga en el param
+    const season = parseInt(searchParams.get('season') || String(LEAGUE_SEASONS[leagueId] ?? 2025));
 
     const res = await fetch(`${API_BASE}/players/topscorers?league=${leagueId}&season=${season}`, {
       headers: { 'x-apisports-key': API_KEY },
-      next: { revalidate: 3600 }, // 1h cache
+      next: { revalidate: 3600 },
     });
 
     if (!res.ok) return NextResponse.json({ scorers: [] });

@@ -20,10 +20,9 @@ interface StandingRow {
 }
 
 const SECTIONS = [
-  { id: LEAGUES.LIGA_PROFESIONAL, label: 'Liga Profesional', anchor: 'liga' },
-  { id: LEAGUES.COPA_ARGENTINA, label: 'Copa Argentina', anchor: 'copa' },
-  { id: LEAGUES.LIBERTADORES, label: 'Copa Libertadores', anchor: 'libertadores' },
-  { id: LEAGUES.SUDAMERICANA, label: 'Sudamericana', anchor: 'sudamericana' },
+  { id: LEAGUES.LIGA_PROFESIONAL,  label: 'Liga Profesional Argentina', anchor: 'liga' },
+  { id: LEAGUES.PRIMERA_NACIONAL,  label: 'Liga B Nacional',            anchor: 'ligab' },
+  { id: LEAGUES.COPA_ARGENTINA,    label: 'Copa Argentina',             anchor: 'copa' },
 ];
 
 function LeagueSection({ leagueId, title, anchor }: { leagueId: number; title: string; anchor: string }) {
@@ -132,7 +131,7 @@ export default function LigaArgentinaPage() {
         <h1 style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 'clamp(36px,5vw,60px)', fontWeight: 800, letterSpacing: -2, color: '#fff' }}>
           FÚTBOL <span style={{ color: 'var(--red)' }}>ARGENTINO</span>
         </h1>
-        <p style={{ fontSize: 12, color: 'var(--text3)' }}>Liga Profesional · Copa Argentina · Libertadores · Sudamericana</p>
+        <p style={{ fontSize: 12, color: 'var(--text3)' }}>Liga Profesional · Liga B Nacional · Copa Argentina</p>
       </div>
 
       {/* Quick nav */}
