@@ -27,9 +27,9 @@ export const LEAGUES = {
 // Ligas europeas: temporada 2025 = agosto 2025 – mayo 2026
 // Sudamérica/Américas: año calendario 2026
 export const LEAGUE_SEASONS: Record<number, number> = {
-  [128]: 2025,   // LPF Argentina — Clausura 2025 / Apertura 2025
-  [131]: 2025,   // Primera Nacional
-  [130]: 2025,   // Copa Argentina
+  [128]: 2026,   // LPF Argentina — Temporada 2026
+  [131]: 2026,   // Primera Nacional 2026
+  [130]: 2026,   // Copa Argentina 2026
   [13]:  2026,   // Libertadores 2026
   [11]:  2026,   // Sudamericana 2026
   [39]:  2025,   // Premier League 2025/26
@@ -37,7 +37,7 @@ export const LEAGUE_SEASONS: Record<number, number> = {
   [135]: 2025,   // Serie A 2025/26
   [2]:   2025,   // Champions League 2025/26
   [3]:   2025,   // Europa League 2025/26
-  [262]: 2025,   // Liga MX Clausura 2025
+  [262]: 2026,   // Liga MX Clausura 2026
   [253]: 2026,   // MLS 2026
   [1]:   2026,   // Mundial 2026
 };
