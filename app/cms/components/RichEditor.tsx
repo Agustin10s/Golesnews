@@ -11,10 +11,11 @@ import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Placeholder from '@tiptap/extension-placeholder';
 import CharacterCount from '@tiptap/extension-character-count';
+import Highlight from '@tiptap/extension-highlight';
 import { Extension } from '@tiptap/core';
 import { useRef, useState, useCallback } from 'react';
 
-// ── Custom FontSize ───────────────────────────────────────────
+// ── Custom FontSize ──────────────────────────────────────────
 const FontSize = Extension.create({
   name: 'fontSize',
   addOptions() { return { types: ['textStyle'] }; },
@@ -40,48 +41,38 @@ const FontSize = Extension.create({
   },
 });
 
-const FONTS = [
-  { label: 'Normal',           value: '' },
-  { label: 'Barlow Condensed', value: "'Barlow Condensed',sans-serif" },
-  { label: 'Georgia',          value: 'Georgia,serif' },
-  { label: 'Courier',          value: "'Courier New',monospace" },
-];
 const SIZES = ['12px','14px','16px','18px','20px','24px','28px','32px','36px','48px'];
 
-// ── Upload helper ─────────────────────────────────────────────
+// ── Upload helper ────────────────────────────────────────────
 async function uploadFile(file: File): Promise<string | null> {
   const allowed = ['image/jpeg','image/png','image/webp','image/gif','image/svg+xml'];
   if (!allowed.includes(file.type)) return null;
-  const fd = new FormData();
-  fd.append('file', file);
+  const fd = new FormData(); fd.append('file', file);
   try {
-    const res  = await fetch('/api/cms/media/upload', { method: 'POST', body: fd });
-    const data = await res.json() as { url?: string };
-    return data.url || null;
-  } catch {
-    return null;
-  }
+    const d = await fetch('/api/cms/media/upload', { method: 'POST', body: fd }).then(r => r.json()) as { url?: string };
+    return d.url || null;
+  } catch { return null; }
 }
 
-interface Props {
-  content: string;
-  onChange: (html: string) => void;
-}
+// ── SVG icon helpers ─────────────────────────────────────────
+const I = (d: string, w = 14, h = 14) => (
+  <svg width={w} height={h} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d={d} />
+  </svg>
+);
+
+interface Props { content: string; onChange: (html: string) => void; }
 
 export default function RichEditor({ content, onChange }: Props) {
-  const fileRef        = useRef<HTMLInputElement>(null);
-  const [dragging,     setDragging]     = useState(false);
-  const [uploading,    setUploading]    = useState(false);
+  const fileRef     = useRef<HTMLInputElement>(null);
+  const [dragging,  setDragging]  = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  // ── Insert image helper ───────────────────────────────────
   const insertImageUrl = useCallback((editorInstance: ReturnType<typeof useEditor>, url: string) => {
     editorInstance?.chain().focus().setImage({ src: url }).run();
   }, []);
 
-  const handleUploadAndInsert = useCallback(async (
-    editorInstance: ReturnType<typeof useEditor>,
-    file: File,
-  ) => {
+  const handleUploadAndInsert = useCallback(async (editorInstance: ReturnType<typeof useEditor>, file: File) => {
     if (!editorInstance) return;
     setUploading(true);
     const url = await uploadFile(file);
@@ -89,7 +80,6 @@ export default function RichEditor({ content, onChange }: Props) {
     setUploading(false);
   }, [insertImageUrl]);
 
-  // ── TipTap setup ──────────────────────────────────────────
   const editor = useEditor({
     extensions: [
       StarterKit.configure({ heading: { levels: [1, 2, 3] } }),
@@ -98,64 +88,46 @@ export default function RichEditor({ content, onChange }: Props) {
       FontFamily,
       FontSize,
       Color,
+      Highlight.configure({ multicolor: true }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Link.configure({ openOnClick: false }),
       Image.configure({ inline: false, allowBase64: true }),
       Youtube.configure({ width: 640, height: 360 }),
-      Placeholder.configure({ placeholder: 'Comenzá a escribir tu nota aquí... (arrastrá imágenes para insertarlas)' }),
+      Placeholder.configure({ placeholder: 'Comenzá a escribir tu nota aquí...' }),
       CharacterCount,
     ],
     content,
     onUpdate: ({ editor: e }) => onChange(e.getHTML()),
     editorProps: {
       attributes: {
-        style: 'min-height:420px;outline:none;padding:16px;font-size:15px;line-height:1.75;color:#e8e8e8',
+        style: 'min-height:420px;outline:none;padding:18px;font-size:15px;line-height:1.8;color:#e0e0e0',
       },
-      // ── Drag & drop images INTO the editor content ──────
       handleDrop(view, event, _slice, moved) {
-        if (moved) return false; // let TipTap handle internal moves
-        const files = Array.from(event.dataTransfer?.files ?? []);
-        const imageFiles = files.filter(f => f.type.startsWith('image/'));
-        if (!imageFiles.length) return false;
-
+        if (moved) return false;
+        const files = Array.from(event.dataTransfer?.files ?? []).filter(f => f.type.startsWith('image/'));
+        if (!files.length) return false;
         event.preventDefault();
-
-        // Position cursor at drop point
-        const coords = { left: event.clientX, top: event.clientY };
-        const pos = view.posAtCoords(coords);
+        const pos = view.posAtCoords({ left: event.clientX, top: event.clientY });
         if (pos) view.dispatch(view.state.tr.setSelection(
-          // @ts-expect-error — TextSelection import not needed at runtime
+          // @ts-expect-error runtime only
           view.state.selection.constructor.near(view.state.doc.resolve(pos.pos))
         ));
-
-        imageFiles.forEach(async file => {
+        files.forEach(async file => {
           setUploading(true);
           const url = await uploadFile(file);
-          if (url) view.dispatch(
-            view.state.tr.replaceSelectionWith(
-              view.state.schema.nodes.image.create({ src: url })
-            )
-          );
+          if (url) view.dispatch(view.state.tr.replaceSelectionWith(view.state.schema.nodes.image.create({ src: url })));
           setUploading(false);
         });
-
         return true;
       },
-      // ── Paste images from clipboard (Ctrl+V / screenshot) ──
       handlePaste(view, event) {
-        const files = Array.from(event.clipboardData?.files ?? []);
-        const imageFiles = files.filter(f => f.type.startsWith('image/'));
-        if (!imageFiles.length) return false;
-
+        const files = Array.from(event.clipboardData?.files ?? []).filter(f => f.type.startsWith('image/'));
+        if (!files.length) return false;
         event.preventDefault();
-        imageFiles.forEach(async file => {
+        files.forEach(async file => {
           setUploading(true);
           const url = await uploadFile(file);
-          if (url) view.dispatch(
-            view.state.tr.replaceSelectionWith(
-              view.state.schema.nodes.image.create({ src: url })
-            )
-          );
+          if (url) view.dispatch(view.state.tr.replaceSelectionWith(view.state.schema.nodes.image.create({ src: url })));
           setUploading(false);
         });
         return true;
@@ -165,58 +137,45 @@ export default function RichEditor({ content, onChange }: Props) {
 
   if (!editor) return null;
 
-  // ── Toolbar helpers ───────────────────────────────────────
-  const btn = (active: boolean, onClick: () => void, label: string, title?: string) => (
+  // ── Toolbar button ───────────────────────────────────────
+  const B = (active: boolean, onClick: () => void, children: React.ReactNode, title?: string) => (
     <button
-      key={label + title}
+      key={title}
       onMouseDown={e => { e.preventDefault(); onClick(); }}
-      title={title || label}
+      title={title}
       style={{
-        padding: '4px 8px', fontSize: 12, cursor: 'pointer',
-        background: active ? '#e8353a' : '#1a1a1a',
-        color:      active ? '#fff'    : '#bbb',
-        border: '1px solid #2a2a2a', borderRadius: 4,
+        display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+        width: 28, height: 26, cursor: 'pointer',
+        background: active ? 'rgba(232,53,58,.2)' : 'transparent',
+        color: active ? '#e8353a' : '#666',
+        border: active ? '1px solid rgba(232,53,58,.3)' : '1px solid transparent',
+        borderRadius: 3,
       }}
     >
-      {label}
+      {children}
     </button>
   );
+
+  const SEP = () => <span style={{ width: 1, background: '#1e1e1e', height: 18, margin: '0 3px', alignSelf: 'center', display: 'inline-block' }} />;
 
   function insertImageByUrl() {
     const url = prompt('URL de la imagen:');
     if (url) insertImageUrl(editor, url);
   }
-
   async function uploadFromInput(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []);
-    for (const file of files) await handleUploadAndInsert(editor, file);
+    for (const file of Array.from(e.target.files ?? [])) await handleUploadAndInsert(editor, file);
     e.target.value = '';
   }
-
   function insertYoutube() {
     const url = prompt('URL del video de YouTube:');
     if (url && editor) editor.commands.setYoutubeVideo({ src: url });
   }
-
   function insertLink() {
     if (!editor) return;
     const prev = editor.isActive('link') ? editor.getAttributes('link').href as string : '';
-    const url  = prompt('URL del enlace:', prev);
+    const url = prompt('URL del enlace:', prev);
     if (url) editor.chain().focus().setLink({ href: url }).run();
     else if (prev) editor.chain().focus().unsetLink().run();
-  }
-
-  // ── Drag over the outer wrapper (shows visual hint) ───────
-  function onWrapperDragOver(e: React.DragEvent) {
-    if (Array.from(e.dataTransfer.items).some(i => i.type.startsWith('image/'))) {
-      e.preventDefault();
-      setDragging(true);
-    }
-  }
-  function onWrapperDrop(e: React.DragEvent) {
-    setDragging(false);
-    // TipTap's handleDrop already processes it; this just clears the overlay
-    e.stopPropagation();
   }
 
   const charCount = editor.storage.characterCount?.characters?.() ?? 0;
@@ -224,129 +183,128 @@ export default function RichEditor({ content, onChange }: Props) {
 
   return (
     <div
-      onDragOver={onWrapperDragOver}
+      onDragOver={e => { if (Array.from(e.dataTransfer.items).some(i => i.type.startsWith('image/'))) { e.preventDefault(); setDragging(true); } }}
       onDragLeave={() => setDragging(false)}
-      onDrop={onWrapperDrop}
+      onDrop={e => { setDragging(false); e.stopPropagation(); }}
       style={{
-        border:       `1px solid ${dragging ? '#e8353a' : '#2a2a2a'}`,
-        borderRadius: 8,
-        overflow:     'hidden',
-        background:   '#111',
-        transition:   'border-color .15s',
-        position:     'relative',
+        border: `1px solid ${dragging ? '#e8353a' : '#1e1e1e'}`,
+        background: '#0a0a0a', transition: 'border-color .15s', position: 'relative',
+        borderRadius: 4, overflow: 'hidden',
       }}
     >
-      {/* ── Drag overlay ─────────────────────────────────── */}
+      {/* Drag overlay */}
       {dragging && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 20,
-          background: 'rgba(232,53,58,.08)',
-          border: '2px dashed #e8353a',
-          borderRadius: 8,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          pointerEvents: 'none',
+          background: 'rgba(232,53,58,.06)', border: '2px dashed #e8353a',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
         }}>
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: 36, marginBottom: 6 }}>🖼</div>
-            <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 20, fontWeight: 700, color: '#e8353a' }}>
-              Soltá la imagen para insertarla
-            </div>
-          </div>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#e8353a', letterSpacing: .5 }}>Soltá la imagen para insertar</span>
         </div>
       )}
 
-      {/* ── Upload spinner ────────────────────────────────── */}
+      {/* Upload indicator */}
       {uploading && (
         <div style={{
           position: 'absolute', top: 8, right: 10, zIndex: 30,
-          background: 'rgba(0,0,0,.7)', borderRadius: 6,
-          padding: '5px 12px', fontSize: 11, color: '#aaa',
-          display: 'flex', alignItems: 'center', gap: 7,
+          background: 'rgba(0,0,0,.85)', borderRadius: 4, padding: '5px 12px',
+          fontSize: 11, color: '#888', display: 'flex', alignItems: 'center', gap: 7,
+          border: '1px solid #1e1e1e',
         }}>
-          <span style={{ display: 'inline-block', width: 12, height: 12, border: '2px solid #555', borderTopColor: '#e8353a', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
-          Subiendo imagen...
+          <div style={{ width: 12, height: 12, border: '2px solid #333', borderTopColor: '#e8353a', borderRadius: '50%', animation: 'spin 0.7s linear infinite' }} />
+          Subiendo...
         </div>
       )}
 
-      {/* ── Toolbar ──────────────────────────────────────── */}
+      {/* Toolbar */}
       <div style={{
-        background: '#161616', borderBottom: '1px solid #2a2a2a',
-        padding: '8px 10px', display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center',
+        background: '#060606', borderBottom: '1px solid #1a1a1a',
+        padding: '6px 10px', display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center',
       }}>
-        {btn(false, () => editor.chain().focus().undo().run(), '↩', 'Deshacer')}
-        {btn(false, () => editor.chain().focus().redo().run(), '↪', 'Rehacer')}
-        <span style={{ width: 1, background: '#333', height: 20, margin: '0 4px' }} />
+        {/* Undo / Redo */}
+        {B(false, () => editor.chain().focus().undo().run(),
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="1,4 1,10 7,10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>, 'Deshacer')}
+        {B(false, () => editor.chain().focus().redo().run(),
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="23,4 23,10 17,10"/><path d="M20.49 15a9 9 0 11-2.13-9.36L23 10"/></svg>, 'Rehacer')}
+        <SEP />
 
-        {btn(editor.isActive('bold'),      () => editor.chain().focus().toggleBold().run(),      'N',  'Negrita')}
-        {btn(editor.isActive('italic'),    () => editor.chain().focus().toggleItalic().run(),    'I',  'Cursiva')}
-        {btn(editor.isActive('underline'), () => editor.chain().focus().toggleUnderline().run(), 'S',  'Subrayado')}
-        {btn(editor.isActive('strike'),    () => editor.chain().focus().toggleStrike().run(),    '~~', 'Tachado')}
-        <span style={{ width: 1, background: '#333', height: 20, margin: '0 4px' }} />
+        {/* Text style */}
+        {B(editor.isActive('bold'),      () => editor.chain().focus().toggleBold().run(),      <strong style={{ fontSize: 13 }}>N</strong>, 'Negrita')}
+        {B(editor.isActive('italic'),    () => editor.chain().focus().toggleItalic().run(),    <em style={{ fontSize: 13 }}>I</em>, 'Cursiva')}
+        {B(editor.isActive('underline'), () => editor.chain().focus().toggleUnderline().run(), <span style={{ fontSize: 12, textDecoration: 'underline' }}>U</span>, 'Subrayado')}
+        {B(editor.isActive('strike'),    () => editor.chain().focus().toggleStrike().run(),    <span style={{ fontSize: 12, textDecoration: 'line-through' }}>S</span>, 'Tachado')}
+        {B(editor.isActive('highlight'), () => editor.chain().focus().toggleHighlight({ color: '#fbbf24' }).run(),
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M9.06 1.93C7.17 1.92 5.33 3.74 6.17 6L11 17l2-2 1.48-1.48-4.71-11.24C9.87 2.15 9.46 1.93 9.06 1.93zM15 9l-5 5-1 4 4-1 5-5-3-3zm5-5a1 1 0 00-.71.29l-2 2 3 3 2-2a1 1 0 000-1.42l-1.58-1.58A1 1 0 0020 4z"/></svg>, 'Resaltar')}
+        <SEP />
 
-        {([1,2,3] as const).map(l =>
-          btn(editor.isActive('heading', { level: l }), () => editor.chain().focus().toggleHeading({ level: l }).run(), `H${l}`)
+        {/* Headings */}
+        {([1, 2, 3] as const).map(l =>
+          B(editor.isActive('heading', { level: l }), () => editor.chain().focus().toggleHeading({ level: l }).run(),
+            <span style={{ fontSize: 11, fontWeight: 700 }}>H{l}</span>, `Título ${l}`)
         )}
-        {btn(editor.isActive('paragraph'), () => editor.chain().focus().setParagraph().run(), 'P', 'Párrafo')}
-        <span style={{ width: 1, background: '#333', height: 20, margin: '0 4px' }} />
+        {B(editor.isActive('paragraph'), () => editor.chain().focus().setParagraph().run(), <span style={{ fontSize: 11 }}>P</span>, 'Párrafo')}
+        <SEP />
 
-        {btn(editor.isActive('bulletList'),  () => editor.chain().focus().toggleBulletList().run(),  '• Lista')}
-        {btn(editor.isActive('orderedList'), () => editor.chain().focus().toggleOrderedList().run(), '1. Lista')}
-        {btn(editor.isActive('blockquote'),  () => editor.chain().focus().toggleBlockquote().run(),  '❝', 'Cita')}
-        <span style={{ width: 1, background: '#333', height: 20, margin: '0 4px' }} />
+        {/* Lists */}
+        {B(editor.isActive('bulletList'),  () => editor.chain().focus().toggleBulletList().run(),
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="3" cy="6" r="1"/><circle cx="3" cy="12" r="1"/><circle cx="3" cy="18" r="1"/></svg>, 'Lista')}
+        {B(editor.isActive('orderedList'), () => editor.chain().focus().toggleOrderedList().run(),
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4"/><path d="M4 10h2"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"/></svg>, 'Lista numerada')}
+        {B(editor.isActive('blockquote'),  () => editor.chain().focus().toggleBlockquote().run(),
+          I('M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1zm12 0c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z'), 'Cita')}
+        <SEP />
 
-        {['left','center','right','justify'].map(a =>
-          btn(editor.isActive({ textAlign: a }), () => editor.chain().focus().setTextAlign(a).run(),
-            a === 'left' ? '⬅' : a === 'center' ? '↔' : a === 'right' ? '➡' : '≡', `Alinear ${a}`)
-        )}
-        <span style={{ width: 1, background: '#333', height: 20, margin: '0 4px' }} />
-
-        {/* Font family */}
-        <select onChange={e => {
-          if (e.target.value) editor.chain().focus().setFontFamily(e.target.value).run();
-          else editor.chain().focus().unsetFontFamily().run();
-        }} style={{ fontSize: 11, background: '#1a1a1a', color: '#bbb', border: '1px solid #2a2a2a', borderRadius: 4, padding: '3px 6px', cursor: 'pointer' }}>
-          {FONTS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-        </select>
+        {/* Alignment */}
+        {B(editor.isActive({ textAlign: 'left' }),    () => editor.chain().focus().setTextAlign('left').run(),
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>, 'Alinear izquierda')}
+        {B(editor.isActive({ textAlign: 'center' }),  () => editor.chain().focus().setTextAlign('center').run(),
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="17" y1="12" x2="7" y2="12"/><line x1="19" y1="18" x2="5" y2="18"/></svg>, 'Centrar')}
+        {B(editor.isActive({ textAlign: 'right' }),   () => editor.chain().focus().setTextAlign('right').run(),
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>, 'Alinear derecha')}
+        <SEP />
 
         {/* Font size */}
         <select onChange={e => {
-          if (e.target.value) (editor.commands as unknown as { setFontSize: (s:string)=>void }).setFontSize(e.target.value);
-        }} defaultValue="" style={{ fontSize: 11, background: '#1a1a1a', color: '#bbb', border: '1px solid #2a2a2a', borderRadius: 4, padding: '3px 6px', cursor: 'pointer' }}>
+          if (e.target.value) (editor.commands as unknown as { setFontSize: (s: string) => void }).setFontSize(e.target.value);
+        }} defaultValue="" title="Tamaño de fuente"
+          style={{ fontSize: 11, background: '#111', color: '#666', border: '1px solid #1e1e1e', borderRadius: 3, padding: '3px 5px', cursor: 'pointer', height: 26 }}>
           <option value="">Tamaño</option>
           {SIZES.map(s => <option key={s} value={s}>{s}</option>)}
         </select>
 
-        {/* Text color */}
-        <input type="color" defaultValue="#ffffff"
+        {/* Color */}
+        <input type="color" defaultValue="#ffffff" title="Color de texto"
           onChange={e => editor.chain().focus().setColor(e.target.value).run()}
-          title="Color de texto"
-          style={{ width: 28, height: 28, padding: 2, background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: 4, cursor: 'pointer' }}
+          style={{ width: 26, height: 26, padding: 2, background: '#111', border: '1px solid #1e1e1e', borderRadius: 3, cursor: 'pointer' }}
         />
-        <span style={{ width: 1, background: '#333', height: 20, margin: '0 4px' }} />
+        <SEP />
 
-        {/* Media buttons */}
-        {btn(false, insertImageByUrl, '🖼 URL',     'Insertar imagen por URL')}
-        {btn(false, () => fileRef.current?.click(), '⬆ Subir',   'Subir imagen desde archivo')}
-        {btn(false, insertYoutube,                  '▶ YouTube', 'Insertar video de YouTube')}
-        {btn(editor.isActive('link'), insertLink,   '🔗',        'Insertar / editar enlace')}
-        {btn(false, () => editor.chain().focus().setHorizontalRule().run(), '—', 'Separador')}
+        {/* Media */}
+        {B(false, insertImageByUrl,
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>, 'Imagen por URL')}
+        {B(false, () => fileRef.current?.click(),
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17,8 12,3 7,8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>, 'Subir imagen')}
+        {B(false, insertYoutube,
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22.54 6.42a2.78 2.78 0 00-1.94-1.96C18.88 4 12 4 12 4s-6.88 0-8.6.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.4 19.54C5.12 20 12 20 12 20s6.88 0 8.6-.46a2.78 2.78 0 001.94-1.96A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75,15.02 15.5,12 9.75,8.98 9.75,15.02"/></svg>, 'Video YouTube')}
+        {B(editor.isActive('link'), insertLink,
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>, 'Insertar enlace')}
+        {B(false, () => editor.chain().focus().setHorizontalRule().run(),
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>, 'Separador')}
 
         <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={uploadFromInput} />
       </div>
 
-      {/* ── Editor content area ───────────────────────────── */}
+      {/* Editor content */}
       <EditorContent editor={editor} />
 
-      {/* ── Footer ───────────────────────────────────────── */}
+      {/* Footer */}
       <div style={{
-        background: '#161616', borderTop: '1px solid #2a2a2a',
-        padding: '5px 12px', display: 'flex', gap: 16,
-        fontSize: 10, color: '#444', alignItems: 'center',
+        background: '#060606', borderTop: '1px solid #1a1a1a',
+        padding: '5px 14px', display: 'flex', gap: 16,
+        fontSize: 10, color: '#333', alignItems: 'center',
       }}>
-        <span>{wordCount} palabras · {charCount} caracteres</span>
-        <span style={{ marginLeft: 'auto', color: '#333' }}>
-          💡 Arrastrá imágenes · Pegá con Ctrl+V · Subí con ⬆ Subir
-        </span>
+        <span>{wordCount} palabras &nbsp;·&nbsp; {charCount} caracteres</span>
+        <span style={{ marginLeft: 'auto', color: '#262626' }}>Arrastrá imágenes · Ctrl+V para pegar</span>
       </div>
     </div>
   );

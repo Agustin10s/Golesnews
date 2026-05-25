@@ -61,6 +61,8 @@ export async function GET(req: NextRequest) {
       author_name:    (a as typeof a & { author_name?: string }).author_name || 'GolesNews',
       read_time:      readTime(a.content),
       source_name:    a.source_name || null,
+      section:        (a as typeof a & { section?: string }).section || '',
+      subcategory:    (a as typeof a & { subcategory?: string }).subcategory || '',
     }));
 
     return NextResponse.json({

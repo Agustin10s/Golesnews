@@ -54,13 +54,7 @@ export default function FixtureCarousel() {
     );
   }
 
-  if (fixtures.length === 0) {
-    return (
-      <div style={{ padding: '14px 1rem', color: 'var(--text3)', fontSize: 12, textAlign: 'center' }}>
-        No hay partidos disponibles — configurá la API key en .env.local
-      </div>
-    );
-  }
+  if (fixtures.length === 0) return null;
 
   return (
     <div style={{ overflowX: 'auto', borderBottom: '1px solid var(--border)' }}>

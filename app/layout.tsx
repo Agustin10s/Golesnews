@@ -2,7 +2,6 @@ import type { Metadata } from 'next';
 import './globals.css';
 import Nav from './components/Nav';
 import Ticker from './components/Ticker';
-import LiveBar from './components/LiveBar';
 import Footer from './components/Footer';
 
 export const metadata: Metadata = {
@@ -28,7 +27,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <Nav />
         <Ticker />
-        <LiveBar />
         <main>{children}</main>
         <Footer />
       </body>

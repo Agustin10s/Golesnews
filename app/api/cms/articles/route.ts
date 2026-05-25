@@ -17,8 +17,9 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const session = await getSession();
   const body = await req.json();
-  const { title, content, category, excerpt, tags, status, featured_image,
-          seo_title, seo_description, seo_keywords, source_url, source_name } = body;
+  const { title, content, category, excerpt, copete, tags, status, featured_image,
+          seo_title, seo_description, seo_keywords, source_url, source_name,
+          section, subcategory } = body;
 
   if (!title || !content) {
     return NextResponse.json({ error: 'Título y contenido requeridos' }, { status: 400 });
@@ -26,13 +27,14 @@ export async function POST(req: NextRequest) {
 
   const slug = uniqueSlug(body.slug || title);
   const id = articleDb.create({
-    title, slug, excerpt: excerpt || '', content, category: category || 'futbol',
+    title, slug, excerpt: excerpt || '', copete: copete || '', content, category: category || 'futbol',
     tags: tags || [], status: status || 'draft',
     featured_image: featured_image || '',
     author_id: session ? parseInt(session.sub) : undefined,
     seo_title: seo_title || '', seo_description: seo_description || '',
     seo_keywords: seo_keywords || '',
     source_url: source_url || '', source_name: source_name || '',
+    section: section || '', subcategory: subcategory || '',
   });
   return NextResponse.json({ id, slug }, { status: 201 });
 }

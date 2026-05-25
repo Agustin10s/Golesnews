@@ -30,9 +30,7 @@ export default function Footer() {
           <div>
             <h5 style={{ fontSize: 9, fontWeight: 700, letterSpacing: '1.8px', textTransform: 'uppercase', color: 'var(--text3)', marginBottom: 11 }}>GolesNews</h5>
             <Link href="/mundial-2026" style={{ display: 'block', fontSize: 12.5, color: 'var(--text2)', marginBottom: 7, textDecoration: 'none' }}>Mundial 2026</Link>
-            <Link href="/fixture" style={{ display: 'block', fontSize: 12.5, color: 'var(--text2)', marginBottom: 7, textDecoration: 'none' }}>Fixture</Link>
             <Link href="/tablas" style={{ display: 'block', fontSize: 12.5, color: 'var(--text2)', marginBottom: 7, textDecoration: 'none' }}>Tablas</Link>
-            <Link href="/en-vivo" style={{ display: 'block', fontSize: 12.5, color: 'var(--red)', marginBottom: 7, textDecoration: 'none', fontWeight: 600 }}>● En Vivo</Link>
           </div>
         </div>
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>

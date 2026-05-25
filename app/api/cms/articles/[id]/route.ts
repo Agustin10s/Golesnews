@@ -12,12 +12,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   const { id } = await params;
   const body = await req.json();
   articleDb.update(parseInt(id), {
-    title: body.title, slug: body.slug, excerpt: body.excerpt,
+    title: body.title, slug: body.slug, excerpt: body.excerpt, copete: body.copete,
     content: body.content, category: body.category,
     tags: body.tags, status: body.status,
     featured_image: body.featured_image,
     seo_title: body.seo_title, seo_description: body.seo_description,
     seo_keywords: body.seo_keywords,
+    section: body.section, subcategory: body.subcategory,
   });
   return NextResponse.json({ ok: true });
 }

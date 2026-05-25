@@ -5,8 +5,6 @@ import { useState } from 'react';
 
 const LINKS = [
   { href: '/', label: 'Inicio' },
-  { href: '/en-vivo', label: '● EN VIVO', live: true },
-  { href: '/fixture', label: 'Fixture' },
   { href: '/tablas', label: 'Tablas' },
   { href: '/liga-argentina', label: 'Argentina' },
   { href: '/sudamerica', label: 'Sudamérica' },
