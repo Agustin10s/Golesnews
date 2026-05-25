@@ -19,7 +19,6 @@ const LEAGUES_CONFIG = [
   { id: LEAGUES.LALIGA,            label: 'La Liga',                     flag: '🇪🇸', group: 'Europa' },
   { id: LEAGUES.SERIE_A,           label: 'Serie A',                     flag: '🇮🇹', group: 'Europa' },
   // Américas
-  { id: LEAGUES.LIGA_MX,           label: 'Liga MX',                     flag: '🇲🇽', group: 'Américas' },
   { id: LEAGUES.MLS,               label: 'MLS',                         flag: '🇺🇸', group: 'Américas' },
   // Mundial
   { id: LEAGUES.WORLD_CUP,         label: 'Copa Mundial 2026',           flag: '🏆', group: 'Mundial' },

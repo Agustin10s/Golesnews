@@ -17,17 +17,17 @@ export const LEAGUES = {
   CHAMPIONS_LEAGUE: 2,     // UEFA Champions League
   EUROPA_LEAGUE: 3,        // UEFA Europa League
   // Américas
-  LIGA_MX: 262,            // Liga MX (México)
   MLS: 253,                // MLS (USA)
   // Mundial
   WORLD_CUP: 1,            // Copa Mundial FIFA 2026
 } as const;
 
-// Temporadas por liga (Mayo 2026)
-// Ligas europeas: temporada 2025 = agosto 2025 – mayo 2026
-// Sudamérica/Américas: año calendario 2026
+// Temporadas por liga
+// Ligas europeas (Premier, LaLiga, Serie A, UCL, UEL): la API Football usa el año
+// de INICIO de temporada. La 2025/26 se pide con season=2025.
+// Argentina / Sudamérica / MLS / Mundial: año calendario, todos en 2026.
 export const LEAGUE_SEASONS: Record<number, number> = {
-  [128]: 2026,   // LPF Argentina — Temporada 2026
+  [128]: 2026,   // LPF Argentina 2026
   [131]: 2026,   // Primera Nacional 2026
   [130]: 2026,   // Copa Argentina 2026
   [13]:  2026,   // Libertadores 2026
@@ -37,7 +37,6 @@ export const LEAGUE_SEASONS: Record<number, number> = {
   [135]: 2025,   // Serie A 2025/26
   [2]:   2025,   // Champions League 2025/26
   [3]:   2025,   // Europa League 2025/26
-  [262]: 2026,   // Liga MX Clausura 2026
   [253]: 2026,   // MLS 2026
   [1]:   2026,   // Mundial 2026
 };

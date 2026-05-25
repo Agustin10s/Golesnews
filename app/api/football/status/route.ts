@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cacheStats } from '@/lib/api-cache';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,7 +15,6 @@ export async function GET() {
     });
   }
 
-  // Test real call to the API
   try {
     const res = await fetch('https://v3.football.api-sports.io/status', {
       headers: { 'x-apisports-key': key },
@@ -22,13 +22,30 @@ export async function GET() {
     });
     const data = await res.json();
     const account = data?.response;
+    const errors  = data?.errors;
+    const cache   = cacheStats();
+
+    // Muestra si hay límite de requests alcanzado
+    const limitReached = !!(
+      errors?.requests &&
+      String(errors.requests).includes('limit')
+    );
+
     return NextResponse.json({
-      ok: true,
+      ok: !limitReached,
       keySet: true,
       keyPreview: key.slice(0, 6) + '...',
+      limitReached,
+      requestsUsed:  account?.requests?.current  ?? null,
+      requestsLimit: account?.requests?.limit_day ?? null,
+      requestsLeft:  account?.requests?.limit_day != null
+        ? account.requests.limit_day - (account.requests.current ?? 0)
+        : null,
+      plan: account?.subscription?.plan ?? null,
       account: account ?? null,
+      errors: errors ?? null,
+      cache,
       httpStatus: res.status,
-      raw: data,
     });
   } catch (e) {
     return NextResponse.json({

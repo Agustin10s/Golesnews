@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { LEAGUES, LEAGUE_SEASONS } from '@/lib/football-api';
+import { cachedFetch } from '@/lib/api-cache';
+
+export const dynamic = 'force-dynamic';
 
 const API_BASE = 'https://v3.football.api-sports.io';
-const API_KEY = process.env.FOOTBALL_API_KEY || '';
+const API_KEY  = process.env.FOOTBALL_API_KEY || '';
+
+const TTL = 6 * 60 * 60 * 1000; // 6 horas
 
 export async function GET(req: NextRequest) {
   try {
@@ -11,18 +16,28 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = req.nextUrl;
-    const leagueId = parseInt(searchParams.get('league') || String(LEAGUES.LIGA_PROFESIONAL));
-    // Usa la season correcta de la liga, o la que venga en el param
-    const season = parseInt(searchParams.get('season') || String(LEAGUE_SEASONS[leagueId] ?? 2025));
+    const leagueId = parseInt(
+      searchParams.get('league') || String(LEAGUES.LIGA_PROFESIONAL),
+    );
+    const season = parseInt(
+      searchParams.get('season') || String(LEAGUE_SEASONS[leagueId] ?? 2026),
+    );
 
-    const res = await fetch(`${API_BASE}/players/topscorers?league=${leagueId}&season=${season}`, {
-      headers: { 'x-apisports-key': API_KEY },
-      next: { revalidate: 3600 },
-    });
+    const scorers = await cachedFetch(
+      `scorers:${leagueId}:${season}`,
+      async () => {
+        const res = await fetch(
+          `${API_BASE}/players/topscorers?league=${leagueId}&season=${season}`,
+          { headers: { 'x-apisports-key': API_KEY }, cache: 'no-store' },
+        );
+        if (!res.ok) return [];
+        const data = await res.json();
+        return data.response || [];
+      },
+      TTL,
+    );
 
-    if (!res.ok) return NextResponse.json({ scorers: [] });
-    const data = await res.json();
-    return NextResponse.json({ scorers: data.response || [] });
+    return NextResponse.json({ scorers });
   } catch (e) {
     return NextResponse.json({ scorers: [], error: String(e) }, { status: 500 });
   }

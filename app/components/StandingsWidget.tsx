@@ -11,7 +11,6 @@ const TABS = [
   { id: LEAGUES.LALIGA, label: 'LaLiga' },
   { id: LEAGUES.CHAMPIONS_LEAGUE, label: 'UCL' },
   { id: LEAGUES.LIBERTADORES, label: 'Libertad.' },
-  { id: LEAGUES.LIGA_MX, label: 'Liga MX' },
   { id: LEAGUES.MLS, label: 'MLS' },
 ];
 

@@ -18,12 +18,7 @@ interface StandingRow {
   all: { played: number; win: number; draw: number; lose: number; goals: { for: number; against: number } };
 }
 
-const LEAGUES_CONFIG = [
-  { id: LEAGUES.LIGA_MX, label: 'Liga MX', flag: '🇲🇽', anchor: 'ligamx' },
-  { id: LEAGUES.MLS,     label: 'MLS',     flag: '🇺🇸', anchor: 'mls'    },
-];
-
-function AmericasLeague({ leagueId, title, flag, anchor }: { leagueId: number; title: string; flag: string; anchor: string }) {
+export default function AmericasPage() {
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [standings, setStandings] = useState<StandingRow[][]>([]);
   const [leagueLogo, setLeagueLogo] = useState('');
@@ -31,22 +26,29 @@ function AmericasLeague({ leagueId, title, flag, anchor }: { leagueId: number; t
   const [tab, setTab] = useState<'tabla' | 'fixture' | 'goleadores'>('tabla');
 
   useEffect(() => {
-    fetch(`/api/football/fixtures?league=${leagueId}`)
+    fetch(`/api/football/fixtures?league=${LEAGUES.MLS}`)
       .then(r => r.json()).then(d => setFixtures(d.fixtures || [])).catch(() => {});
-    fetch(`/api/football/standings?league=${leagueId}`)
+    fetch(`/api/football/standings?league=${LEAGUES.MLS}`)
       .then(r => r.json())
       .then(d => { if (d.data) { setStandings(d.data.standings || []); setLeagueLogo(d.data.league?.logo || ''); } })
       .catch(() => {});
-    fetch(`/api/football/scorers?league=${leagueId}`)
+    fetch(`/api/football/scorers?league=${LEAGUES.MLS}`)
       .then(r => r.json()).then(d => setScorers(d.scorers || [])).catch(() => {});
-  }, [leagueId]);
+  }, []);
 
   return (
-    <section id={anchor} style={{ marginBottom: 40 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
-        <span style={{ fontSize: 28 }}>{flag}</span>
-        {leagueLogo && <Image src={leagueLogo} alt={title} width={34} height={34} style={{ objectFit: 'contain' }} />}
-        <h2 style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: -.5 }}>{title}</h2>
+    <div style={{ maxWidth: 1300, margin: '0 auto', padding: '18px 1rem' }}>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 'clamp(36px,5vw,60px)', fontWeight: 800, letterSpacing: -2, color: '#fff' }}>
+          FÚTBOL <span style={{ color: 'var(--red)' }}>MLS</span>
+        </h1>
+        <p style={{ fontSize: 12, color: 'var(--text3)' }}>Major League Soccer · USA 2026</p>
+      </div>
+
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+        <span style={{ fontSize: 28 }}>🇺🇸</span>
+        {leagueLogo && <Image src={leagueLogo} alt="MLS" width={34} height={34} style={{ objectFit: 'contain' }} />}
+        <h2 style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: -.5 }}>MLS 2026</h2>
       </div>
 
       <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border)', marginBottom: 14 }}>
@@ -70,7 +72,7 @@ function AmericasLeague({ leagueId, title, flag, anchor }: { leagueId: number; t
             <div key={i}>
               {standings.length > 1 && (
                 <div style={{ padding: '6px 12px', background: 'var(--bg3)', borderBottom: '1px solid var(--border)', fontSize: 11, fontWeight: 700, color: 'var(--gold)', textTransform: 'uppercase' }}>
-                  {group[0]?.group || `Grupo ${String.fromCharCode(64 + i + 1)}`}
+                  {group[0]?.group || `Conferencia ${i === 0 ? 'Este' : 'Oeste'}`}
                 </div>
               )}
               <StandingsTable standings={group} showForm />
@@ -106,32 +108,6 @@ function AmericasLeague({ leagueId, title, flag, anchor }: { leagueId: number; t
           ))}
         </div>
       )}
-    </section>
-  );
-}
-
-export default function AmericasPage() {
-  return (
-    <div style={{ maxWidth: 1300, margin: '0 auto', padding: '18px 1rem' }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 'clamp(36px,5vw,60px)', fontWeight: 800, letterSpacing: -2, color: '#fff' }}>
-          FÚTBOL <span style={{ color: 'var(--red)' }}>AMÉRICAS</span>
-        </h1>
-        <p style={{ fontSize: 12, color: 'var(--text3)' }}>Liga MX · MLS</p>
-      </div>
-
-      <div style={{ display: 'flex', gap: 8, marginBottom: 24, flexWrap: 'wrap' }}>
-        {LEAGUES_CONFIG.map(l => (
-          <a key={l.id} href={`#${l.anchor}`}
-            style={{ fontSize: 11, fontWeight: 600, padding: '6px 14px', border: '1px solid var(--border2)', background: 'var(--bg2)', color: 'var(--text2)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span>{l.flag}</span>{l.label}
-          </a>
-        ))}
-      </div>
-
-      {LEAGUES_CONFIG.map(l => (
-        <AmericasLeague key={l.id} leagueId={l.id} title={l.label} flag={l.flag} anchor={l.anchor} />
-      ))}
     </div>
   );
 }

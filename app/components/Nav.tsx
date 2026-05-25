@@ -11,7 +11,7 @@ const LINKS = [
   { href: '/liga-argentina', label: 'Argentina' },
   { href: '/sudamerica', label: 'Sudamérica' },
   { href: '/europa', label: 'Europa' },
-  { href: '/americas', label: 'Américas' },
+  { href: '/americas', label: 'MLS' },
   { href: '/mundial-2026', label: 'Mundial 2026' },
 ];
 

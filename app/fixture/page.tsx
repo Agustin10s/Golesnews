@@ -23,7 +23,6 @@ const LEAGUE_TABS = [
   { id: LEAGUES.PREMIER_LEAGUE,      label: 'Premier' },
   { id: LEAGUES.LALIGA,              label: 'La Liga' },
   { id: LEAGUES.SERIE_A,             label: 'Serie A' },
-  { id: LEAGUES.LIGA_MX,             label: 'Liga MX' },
   { id: LEAGUES.MLS,                 label: 'MLS' },
   { id: LEAGUES.WORLD_CUP,           label: 'Mundial 2026' },
 ];
