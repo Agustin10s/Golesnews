@@ -1,0 +1,60 @@
+@import "tailwindcss";
+
+:root {
+  --red: #e8353a;
+  --red2: #ff4a4e;
+  --gold: #f5c542;
+  --green: #00c853;
+  --bg: #090909;
+  --bg2: #111111;
+  --bg3: #181818;
+  --bg4: #222222;
+  --text: #f0f0f0;
+  --text2: #aaaaaa;
+  --text3: #5a5a5a;
+  --border: #1e1e1e;
+  --border2: #2e2e2e;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, sans-serif;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+::-webkit-scrollbar { height: 3px; width: 4px; background: var(--bg3); }
+::-webkit-scrollbar-thumb { background: var(--red); }
+
+@keyframes ticker-scroll { 0% { transform:translateX(0); } 100% { transform:translateX(-50%); } }
+@keyframes team-scroll { 0% { transform:translateX(0); } 100% { transform:translateX(-50%); } }
+@keyframes spin { to { transform:rotate(360deg); } }
+@keyframes fadeup { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
+@keyframes shimmer { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
+
+.animate-ticker { animation: ticker-scroll 60s linear infinite; }
+.animate-ticker:hover { animation-play-state: paused; }
+.animate-teams { animation: team-scroll 55s linear infinite; }
+.animate-teams:hover { animation-play-state: paused; }
+.animate-spin { animation: spin 0.7s linear infinite; }
+.animate-fadeup { animation: fadeup 0.35s ease both; }
+.animate-pulse-dot { animation: pulse-dot 1.5s ease-in-out infinite; }
+
+.live-dot { width:7px; height:7px; border-radius:50%; background:var(--red); animation:pulse-dot 1.2s ease-in-out infinite; display:inline-block; }
+.skeleton { background:linear-gradient(90deg,var(--bg3) 25%,var(--bg4) 50%,var(--bg3) 75%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+.form-w { background:rgba(0,200,83,.15); color:#00c853; }
+.form-d { background:rgba(245,197,66,.15); color:var(--gold); }
+.form-l { background:rgba(232,53,58,.15); color:var(--red); }
+
+.article-body p { margin-bottom:1.2rem; }
+.article-body h2 { font-size:1.5rem; font-weight:700; color:#fff; margin:1.8rem 0 .7rem; }
+.article-body h3 { font-size:1.2rem; font-weight:700; color:#fff; margin:1.4rem 0 .45rem; }
+.article-body blockquote { border-left:3px solid var(--red); padding:.7em 1rem; color:var(--text2); font-style:italic; margin:1.3rem 0; background:var(--bg2); }
+.article-body a { color:var(--red); }
+.article-body img { max-width:100%; margin:.7rem 0; }
