@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import StandingsTable from '../components/StandingsTable';
 import { LEAGUES } from '@/lib/football-api';
+import { STATIC_STANDINGS, SR } from '@/lib/static-standings';
 
 const LEAGUES_CONFIG = [
   // Argentina
@@ -24,16 +25,7 @@ const LEAGUES_CONFIG = [
   { id: LEAGUES.WORLD_CUP,         label: 'Copa Mundial 2026',           flag: '🏆', group: 'Mundial' },
 ];
 
-interface StandingRow {
-  rank: number;
-  team: { id: number; name: string; logo: string };
-  points: number;
-  goalsDiff: number;
-  form: string;
-  description?: string | null;
-  group?: string;
-  all: { played: number; win: number; draw: number; lose: number; goals: { for: number; against: number } };
-}
+type StandingRow = SR;
 
 interface LeagueData {
   league: { name: string; logo: string; season: number };
@@ -58,7 +50,14 @@ export default function TablasPage() {
   }, [activeLeague, cache]);
 
   const current = cache[activeLeague];
-  const config = LEAGUES_CONFIG.find(l => l.id === activeLeague);
+  const config  = LEAGUES_CONFIG.find(l => l.id === activeLeague);
+  const staticGroups = STATIC_STANDINGS[activeLeague] ?? [];
+  const fromApi = !!current;
+
+  // Use API data if available, otherwise fall back to static
+  const displayGroups: StandingRow[][] = fromApi
+    ? current.standings
+    : staticGroups;
 
   return (
     <div style={{ maxWidth: 1300, margin: '0 auto', padding: '18px 1rem' }}>
@@ -88,7 +87,7 @@ export default function TablasPage() {
       </div>
 
       {/* League header */}
-      {current?.league && (
+      {fromApi && current.league ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
           <Image src={current.league.logo} alt={current.league.name} width={40} height={40} style={{ objectFit: 'contain' }} />
           <div>
@@ -98,29 +97,43 @@ export default function TablasPage() {
             <div style={{ fontSize: 11, color: 'var(--text3)' }}>Temporada {current.league.season}</div>
           </div>
         </div>
+      ) : config && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+          <span style={{ fontSize: 22 }}>{config.flag}</span>
+          <h2 style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: -.5 }}>
+            {config.label}
+          </h2>
+        </div>
+      )}
+
+      {/* Static data notice */}
+      {!fromApi && !loading && displayGroups.length > 0 && (
+        <p style={{ fontSize: 10, color: 'var(--text3)', marginBottom: 12 }}>
+          📊 Datos al 25/05/2026 — se actualizarán automáticamente cuando la API esté disponible
+        </p>
       )}
 
       {loading ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
           <div className="animate-spin" style={{ width: 36, height: 36, border: '3px solid var(--border2)', borderTopColor: 'var(--red)', borderRadius: '50%' }} />
         </div>
-      ) : !current ? (
+      ) : displayGroups.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--text3)' }}>
           <div style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 22, color: 'var(--text2)', marginBottom: 8 }}>Tabla no disponible</div>
           <div style={{ fontSize: 12 }}>Verificá la API key o volvé más tarde</div>
         </div>
       ) : (
         <div>
-          {current.standings.map((group, i) => (
+          {displayGroups.map((group, i) => (
             <div key={i} style={{ marginBottom: 24, background: 'var(--bg2)', border: '1px solid var(--border)' }}>
-              {current.standings.length > 1 && (
+              {displayGroups.length > 1 && (
                 <div style={{ padding: '8px 12px', background: 'var(--bg3)', borderBottom: '1px solid var(--border)' }}>
                   <span style={{ fontFamily: "'Barlow Condensed',sans-serif", fontSize: 13, fontWeight: 700, textTransform: 'uppercase', color: 'var(--gold)' }}>
                     {group[0]?.group || `Grupo ${i + 1}`}
                   </span>
                 </div>
               )}
-              <StandingsTable standings={group} showForm />
+              <StandingsTable standings={group} showForm={fromApi} />
             </div>
           ))}
 
